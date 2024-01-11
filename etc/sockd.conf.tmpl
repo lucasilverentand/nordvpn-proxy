@@ -1,0 +1,29 @@
+internal: eth0 port=${SOCK_PORT}
+internal: 127.0.0.1 port=${SOCK_PORT}
+external: ${INTERFACE}
+logoutput: stdout
+
+socksmethod: none
+clientmethod: none
+
+user.privileged: root
+user.notprivileged: nobody
+
+${LOCAL_NETWORK_CONFIGS}
+
+client pass {
+  from: 127.0.0.0/8 to: 0.0.0.0/0
+  log: error
+}
+
+client pass {
+  from: $(getEthCidr) to: 0.0.0.0/0
+  log: error
+}
+
+#Allow all sockets connections
+socks pass {
+  from: 0.0.0.0/0 to: 0.0.0.0/0
+  protocol: tcp udp
+  log: error
+}
