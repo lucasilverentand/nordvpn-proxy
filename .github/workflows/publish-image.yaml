@@ -32,13 +32,19 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate Tags
+        id: meta
+        run: |
+          tags="ghcr.io/${{ github.repository }}:latest,${{ github.repository }}:latest"
+          if [[ $(date '+%d') == 01 || "${{ github.event_name }}" == "push" ]]; then
+            tags="${tags},ghcr.io/${{ github.repository }}:$(date '+%Y-%m-%d'),${{ github.repository }}:$(date '+%Y-%m-%d')"
+          fi
+          echo "::set-output name=tags::${tags}"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: |
-            ${{ github.repository_owner }}/${{ github.repository }}:latest
-            ${{ github.repository_owner }}/${{ github.repository }}:$(date +%Y-%m-%d)
-            ${{ github.repository_owner }}/${{ github.repository }}:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6,linux/386,linux/ppc64le,linux/s390x
